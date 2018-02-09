@@ -2,12 +2,13 @@
 title: ""
 author: ""
 output:
-  html_document: 
+    html_notebook: default
+    html_document: 
     fig_caption: yes
     fig_height: 3
     fig_width: 5
     theme: cerulean
-  html_notebook: default
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
@@ -19,9 +20,10 @@ knitr::opts_chunk$set(echo      = TRUE,
                       fig.ext   = 'png')
 ```
 
-<p align=“center”> 
+
 ## Análise de serie temporal usando SSA e Rede Neural
 
+<p align=“center”> 
 ####  Walter Humberto Subiza Pina - Instituto Brasileiro de Geografia e Estatística
 ####  Pedro Costa Ferreira - Fundação Getúlio Vargas
 ####  José Francisco Moreira Pessanha - Universidade do Estado do Rio de Janeiro
