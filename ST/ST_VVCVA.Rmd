@@ -64,6 +64,7 @@ require(forecast)
 require(normtest)
 require(FinTS)
 require(xlsx)
+require(ggplot2)
 require(dygraphs)
 require(nortest)
 require(plotly)
@@ -80,7 +81,7 @@ Vamos conhecer primeiro o comportamento da serie.
 
 ```{r, echo=FALSE}
 # carregando arquivo de dados
-vendas <- read.csv("C:\\Users\\Walter Pina\\Documents\\FGV\\08 Séries Temporais - Pedro\\ST_markdown\\data\\IBGE_VVCVA.csv", 
+vendas <- read.csv("D:/Users/humberto.pina/Documents/R/SER_III/ST/data/IBGE_VVCVA.csv", 
                    header=FALSE, 
                    dec=".",
                    stringsAsFactors = F)
@@ -95,30 +96,19 @@ st_Vendas <- ts(vendas2,
 
 
 ```{r echo=FALSE}
+lim.x <- seq(2003,2012,1)
 ts.plot(st_Vendas, 
-        main= "Gráfico da série temporal de \nVendas  do comércio varejista ampliado",
+        main= "Vendas do comércio varejista ampliado \nBase 100 = 2003",
         xlab= "Tempo",
         ylab= "Volume de vendas",
         col = "blue")
 ```
 
 
-
 No gráfico da série, nota-se variação sazonal muito semelhante até o ano de 2008, onde a partir do qual aparente pequenas irregularidades mas mantendo a variação sazonal. Isto parece coincidir com a _crise financieira de 2008_, o que poderia ter ocasionado variação no comportamento do padrão de gastos das famílias.
 
 
-Um gráfico interativo permite analisar melhor as variacoes da serie.
-
-
-
-
-
-```{r echo=FALSE}
-dygraph(st_Vendas)
-```
-
-
---------------------------------------------------------------------
+---
 
 
  Gráfico para análise de médias e tendencia mensais. Note-se que dezembro tem a média de maior valor, fevereiro a de menor valor e o resto dos meses apresentam valores semelhantes.
@@ -135,7 +125,7 @@ monthplot(st_Vendas)
 
 **Decomposição da série nas principais componentes**
 
-Vamos decompor agora a série em tres partes principais e aditivas: tendencia, componente sazonal e residuo, esse último idealmente deveria ser residuo branco.
+Vamos decompor agora a série em tres partes principais e aditivas: tendencia, componente sazonal e residuo, essa última componente deveria ser residuo branco.
 
 
 ```{r echo=FALSE}

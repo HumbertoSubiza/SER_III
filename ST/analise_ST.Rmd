@@ -2,7 +2,8 @@
 title: ""
 author: ""
 output:
-    html_notebook: default
+    word_document: default
+    html_notebook:
     html_document: 
     fig_caption: yes
     fig_height: 3
@@ -30,7 +31,7 @@ knitr::opts_chunk$set(echo      = TRUE,
 </p>
 
 
-O propósito do trabalho é apresentar o análise de uma série temporal de dados com duas metodologias diferentes, SSA e Rede Neural, assim como fazer uma previsão de comportamento da variável a futuro.
+O propósito do trabalho é apresentar e comparar o análise de uma série temporal de dados econômicos, com duas metodologias diferentes, SSA e Rede Neural.
 
  A serie temporal  a ser analisada tem dados sobre o volume de vendas do comercio varejista ampliado (VVCVA) entre Janeiro de 2003 e Dezembro de 2011. A serie inclue além do comercio varejista, os setores de "Veículos, motocicletas, partes e peças" e "Material de construção". A categoria selecionada foi de Indice de base fixa com 2003 = 100.
  
@@ -43,7 +44,6 @@ O propósito do trabalho é apresentar o análise de uma série temporal de dado
  
  
 ```{r, echo=FALSE}
-library (dygraphs)  # Gráficos dinamicos
 library (neuralnet) # ROTINAS PARA REDE NEURAL
 ```
 
@@ -80,15 +80,6 @@ plot (st_Vendas,
 ```
 
 
-Vamos analisar graficamente a sazonalidade e determinar os meses em que
-as variações são máximas e mínimas
-
-
-
-```{r}
-dygraph (st_Vendas)
-```
-
 ---
 
 Se observa que a série tem uma **tendencia crescente** ao longo do tempo, com
@@ -111,9 +102,8 @@ plot (logst_Vendas,
 ```
 
 
-
  A tendencia da série, será retirada fazendo uma diferença entre observações
-com lag=1 e diferenças de primeira ordem
+com `lag = 1` e diferenças de primeira ordem
 
 ```{r}
 delta <- diff(logst_Vendas, lag = 1, differences = 1)
@@ -199,6 +189,8 @@ ninsample  <- npadroes - noutsample # número de padrões de treino
 ```
 
 ---
+
+
 
 ---
 
