@@ -1,8 +1,15 @@
 ---
 title: ""
 author: ""
-date: ""
-output: word_document
+output:
+    word_document:
+    html_notebook:
+    html_document: default
+    fig_caption: yes
+    fig_height: 2
+    fig_width: 3
+    theme: cerulean
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
@@ -36,7 +43,7 @@ require(normtest)
 
 ```{r echo=FALSE}
 # carregando arquivo de dados
-vendas <- read.csv("IBGE_VVCVA.csv", 
+vendas <- read.csv("data/IBGE_VVCVA.csv", 
                    header=FALSE, 
                    dec=".", 
                    stringsAsFactors = F)
