@@ -1,8 +1,8 @@
 ---
-title: "R Notebook"
+title: "Rede Neural"
 output:
 #  word_document: default
-  html_notebook: default
+  html_document: default
 ---
 
 
@@ -15,8 +15,6 @@ knitr::opts_chunk$set(echo      = FALSE,
                       fig.ext   = 'png')
 ```
 
-
-## adicionar os dados de 2012 ao arquivo de entrada!!
 
 ## Análise de uma série temporal usando Rede Neural
 
@@ -48,7 +46,7 @@ library (neuralnet) # ROTINAS PARA REDE NEURAL
 carregando arquivo de dados
 
 ```{r load}
-vendas <- read.csv("IBGE_VVCVA.csv", 
+vendas <- read.csv("IBGE_VVCVA_RN.csv", 
                    header=FALSE, 
                    stringsAsFactors = F)
 
@@ -194,7 +192,7 @@ ninsample  <- npadroes-noutsample # número de padrões de treino
 
 TREINA REDE FEEDFORWARD 
 
- Serão usadas 8 camadas escondidas, valor foi o melhor encontrado depois de testar de 3 a 10 camadas. Os padrões a serem usados são os primeiros 84 (1:ninsample) valores observados.
+ Serão usadas 8 camadas escondidas, valor foi o melhor encontrado depois de testar de 3 a 10 camadas. Os padrões a serem usados são os primeiros 95 (1:ninsample) valores observados.
  
 
 
@@ -224,7 +222,7 @@ plot(modelo_nn,
  PREVISÃO INSAMPLE
  
  
-Feito o modelo, vamos fazer uma previsão com o modelo calculado, sobre os próprios dados de treinamento (previsão insample de 84 dados).
+Feito o modelo, vamos fazer uma previsão com o modelo calculado, sobre os próprios dados de treinamento (previsão insample de 95 dados).
 
 Essa previsão vai servir para testar a precisão do modelo calculado
 
@@ -316,8 +314,8 @@ text(x_plot,y_plot2, paste0("MAPE = ",MAPE_INSAMPLE," %"))
 
  PREVISÃO OUTSAMPLE 
  
- Vamos fazer agora a previsão sobre os valores que não foram usados para treinar o modelo, ou seja os ltimos 12 valores do ano 2011 (indices 84 a 95 dos dados de data.train)
-previs?o da diferen?a do log
+ Vamos fazer agora a previsão sobre os valores que não foram usados para treinar o modelo, ou seja os últimos 12 valores do ano 2012 (indices 96 a 107 dos dados de data.train)
+previsão da diferença do log
 
 
 ```{r 12_RN_prev_out}
@@ -341,7 +339,7 @@ lines((ninsample+1):(ninsample+noutsample),
 
 
 
- previs?o do log 1 passo a frente
+ previsão do log 1 passo a frente
  
  
  
@@ -360,7 +358,7 @@ plot(indice[ninsample+1]:indice[ninsample+noutsample],
      ylim = c(5,5.6),
      xlab = "Indice do valor",
      ylab = "log(Valores)",
-     main = "log(valores observados) vs linha de previs?o
+     main = "log(valores observados) vs linha de previsão
      12 meses a frente",
      pch  = 19)
 
@@ -395,8 +393,8 @@ plot (indice[ninsample+1]:indice[ninsample+noutsample],
      st_Vendas[indice[ninsample + 1]:indice[ninsample + noutsample]],
      xlab = "Indice",
      ylab = "Volume vendas",
-     main = "Previs?o de vendas do comercio varejista
-     Ano de 2011 - Dados de Teste",
+     main = "Previsão de vendas do comercio varejista
+     Ano de 2012 - Dados de Teste",
      ylim = c(160,250))
 
 lines(indice[ninsample + 1]:indice[ninsample + noutsample],
@@ -420,8 +418,8 @@ Fazer uma série temporal com a previsão e exportar o arquivo
 ```{r 15_RN_st_prev}
 
 
-Vendas_2011 <- ts (round((previsao_vendas_futuro),2), 
-                start     = c(2011,1), 
+Vendas_2012 <- ts (round((previsao_vendas_futuro),2), 
+                start     = c(2012,1), 
                 frequency = 12)
 
 # salvar como data frame e exportar
@@ -430,13 +428,13 @@ meses <- c("Jan","Fev","Mar","Abr","Mai","Jun",
 
 nome_col <- c( "Vendas Previstas") 
 
-prev_vendas_2011 <- as.data.frame(Vendas_2011, 
+prev_vendas_2012 <- as.data.frame(Vendas_2012, 
                                   row.names = meses)
 
-names(prev_vendas_2011) <- nome_col
+names(prev_vendas_2012) <- nome_col
 
-write.csv2(prev_vendas_2011, 
-           file = "rn_previsao_vendas_2011.csv" )
+write.csv2(prev_vendas_2012, 
+           file = "rn_previsao_vendas_2012.csv" )
 ```
 
 
