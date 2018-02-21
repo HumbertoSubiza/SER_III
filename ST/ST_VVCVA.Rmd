@@ -140,6 +140,13 @@ A _componente sazonal presente na série_ afeta em torno de 25% e o _RB é de pe
 
  Precisa-se modelar as componentes de tendencia e sazonal, o que amerita o uso do modelo **SARIMA**
 
+Quando o período s=12, o modelo denominado SARIMA de ordem _(p,d,q)_ × $(P,D,Q)_{12}$, e´
+dado por (MORETTIN & TOLOI, 2004):
+$φ(X)Φ(X^{12}) ∆^d ∆^D_{12}Z_t = θ(X)Θ(X)a_t$ 
+
+em que $φ(X)$ e o operador autorregressivo (AR) de ordem _p_, $θ(X)$ e o operador médias móveis _(MA)_ de ordem _q_, $Φ(X)$ e o operador AR-sazonal de ordem _P_, $Θ(X)$ e o operador MA-sazonal de ordem _Q_, $∆^d$ é o operador diferença, $∆^D_{12}$ é o operador diferença sazonal e $a_t$ e um ruído branco.
+
+
  Função de autocorrelação
  
  Nóta-se que a série ainda nao é estacionaria, já que não tem decrescimento exponencial ou senoidal.
@@ -535,7 +542,6 @@ Finalmente foi feita uma previssão a 12 meses, com 95% de confiança e os resul
 O presente trabalho foi realizado como parte do curso **Big Data e Data Science da FGV- Turma 2016**; na disciplina _Séries Temporais_, ministrada pelo _Prof. Pedro Costa Ferreira_ (<https://github.com/pedrocostaferreira>).
 
 
---------------------------------------------------------------------
 
 
 --------------------------------------------------------------------

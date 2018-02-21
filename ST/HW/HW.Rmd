@@ -1,0 +1,192 @@
+---
+title: "Série Temporal com Holt-Winters"
+author: "Walter Humberto Subiza Pina"
+date: "20 de fevereiro de 2018"
+output: html_document
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo      = FALSE,
+                      warning   = FALSE,
+                      message   = FALSE,
+                      fig.align = "center",
+                      fig.path  ='D:/Users/humberto.pina/Documents/R/SER_III/ST/figuras/', 
+                      fig.ext   = 'png')
+```
+
+```{r}
+library(tidyverse)
+```
+
+
+## Análise de uma série temporal usando o método Holt-Winters
+
+### Introdução
+
+Uma serie temporal é um conjunto de observações ordenadas no tempo e que apresentam uma dependencia serial, ou seja entre instantes de tempo, sendo a realizacao de um processo estocástico no tempo. Esse processo e dito de _ergódico_ quando uma única variável permite modelar o comportamento e fazer predições ( _horizonte de previsão_).
+
+Em séries que apresentam sazonalidade, a variação sazonal pode ser modelada através de _fatores sazonais_, sendo esses de dois tipos: **multiplicativo** (se a sazonalidade é alterada pelo nível da série) ou **aditivo** (o padrão sazonal não se altera).
+
+Um dos modelos mais utilizados, devido a seu baixo custo computacional é o modelo de _amortecimento exponencial de **Holt e Winters**^1,2,3^_. 
+
+A função de predição de Holt-Winters, para séries temporais de período  _p_ em _h_ períodos a frente após a $t_{ésima}$ observação é dada da seguinte forma:
+
+$$\hat{Y}_{t+h} = a_{t} + h * b_{t} + s_{t - p + 1 + (h - 1) ~ mod ~ p}$$,
+
+onde $a_{t}$, $b_{t}$ e $s_{t}$, são os parâmetros de nível, tendência e sazonalidade da série e são expressos por:
+
+$a_{t} = α (Y_{t} - s_{t-p}) + (1-α) (a_{t-1} + b_{t-1})$
+
+$b_{t} = β (a_{t} - a_{t-1}) + (1-β) b_{t-1}$
+
+$s_{t} = γ (Y_{t} - a_{t}) + (1-γ) s_{t-p}$
+
+A função tenta encontrar valores ótimos de inicío para os parãmetros, fazendo uma decomposição simples em tendência e sazonalidade, usando médias móveis.
+
+
+#### USANDO O MÉTODO HOLT-WINTERS NO R.
+
+**O propósito do análise é fazer uma previsão de vendas do comércio varejista para o ano de 2012.**
+
+A série temporal em estudo foi extraída em 02/02/2018 da página do IBGE e está disponível em:
+ <http://seriesestatisticas.ibge.gov.br/series.aspx?no=2&op=0&vcodigo=MC67&t=volume-vendas-comercio-varejista-ampliado-tipos>.
+
+A série contém o _volume de vendas mensal_, contabilizado entre _Janeiro de 2003 e dezembro de 2011_, usando _índice de base fixa com 2003=100_.
+ 
+ 
+Para realizar a estimação e posterior previsão pelo método Holt-Winters no R utilizamos a função `HoltWinters`.
+
+```{r, echo=FALSE}
+# carregando arquivo de dados
+# vendas <- read.csv("D:/Users/humberto.pina/Documents/R/SER_III/ST/data/IBGE_VVCVA.csv", 
+
+vendas <- read.csv("D:/Users/humberto.pina/Documents/R/SER_III/ST/data/IBGE_VVCVA.csv", 
+                   header=FALSE, 
+                   dec=".",
+                   stringsAsFactors = F)
+#transposição de linha a coluna em dataframe
+vendas2 <- as.data.frame(t(vendas))
+
+# transformação em serie temporal
+st_Vendas <- ts(vendas2, 
+                start     = c(2003,1), 
+                frequency = 12)
+vol_2012 <- read.csv2("D:/Users/humberto.pina/Documents/R/SER_III/ST/data/2012.csv",
+                 header=FALSE, 
+                 stringsAsFactors = F)
+```
+
+É importante plotar a série para verificar seu comportamento. No seguinte gráfico se apresenta a série original e a filtrada com o método Holt-Winters, parâmetros iniciais padrâo. 
+
+```{r}
+#Realiza o método Holt-Winters
+HW <- HoltWinters(st_Vendas)
+ 
+#Plota a série temporal
+plot(HW, 
+     main = "Série observada e filtrada",
+     ylab = "valores",
+     xlab = "tempo",
+     ylim = c(0,250),
+     lwd  = 2)
+```
+
+Visualmente nota-se que a série tem uma tendência crescente, com efeito sazonal no final e começo de cada ano.
+
+A saída da filtragem pelo método inclue os coeficientes calculados, nesse caso a deteção automática de uma série com período igual a 12 (anual), permitiu calcular 14 parâmetros, correspondentes aos coeficientes _a_, _b_ e 12 sazonais _s1:12_.
+
+```{r}
+coef <- as.data.frame(HW$coefficients)
+names(coef) <- c("Coeficientes calculados")
+coef
+```
+
+Se observa os valores maiores nos coeficientes, _s2_ e _s12_, que se correspondem com os meses de fevereiro e dezembro de cada ano e a observação do gráfico anterior.
+
+Feita a filtragem, a decomposição da série é simples através do elemento "fitted" da lista de saída. Esse elemento é uma matriz de 4 colunas contendo respectivamente, os valores ajustados ("xhat"), o nível ("level"), a tendência ("trend"), e a componente sazonal ("season").
+
+```{r echo=FALSE}
+#Plota a decomposição da serie
+plot(fitted(HW), main = "Decomposição da série", xlab="Tempo")
+
+```
+
+Observe que após o ano 2008, o nível apresenta um decrescimento, condicente com a crise econômico desse ano.
+
+Com um horizonte de previsão de 12 meses, podemos fazer o cálculo dos valores para o ano de 2012, usando um intervalo de confiança de 95%.
+
+```{r}
+#Realiza a previsão para 12 meses a frente
+p <- predict(HW, 12, prediction.interval = TRUE, level = 0.95)
+plot(HW, p,
+     main = "Previsão do volume de vendas, ano 2012\nIntervalo de confiança em azul",
+     xlab = "Tempo",
+     ylab = "Volume de vendas - 2003 = 100",
+     ylim = c(0,300))
+
+HW_prev <- write.csv2(p, "D:/Users/humberto.pina/Documents/R/SER_III/ST/dataHW_prev.csv")
+```
+
+O horizonte de previsão calculado é uma matriz de três colunas contendo o valor calculado assim como os limites superior e inferior de confiança ao 95%. Incorporando os valores realmente observados em 2012, e fazendo a diferença entre real e observado temos:
+
+```{r}
+hw <- as.data.frame((matrix(round(p,2), 12)), dimnames(seq(1,12,1)))
+
+hw_res <- cbind(hw,vol_2012)
+
+names(hw_res)  <- c("prev", "sup","inf","real")
+hw_res <- hw_res %>% mutate(dif = real-prev)
+
+row.names(hw_res) <- c("Jan", "Fev", "Mar", "Abr", 
+                      "Mai", "Jun", "Jul", "Ago",
+                      "Set", "Out", "Nov", "Dec")
+hw_res
+```
+
+
+```{r}
+plot(hw_res$real,
+     main = "Horizonte de previsão e realidade - 2012",
+     ylab = "Volume",
+     xlab = "Meses",
+     type = "l", 
+     col = "Blue",
+     ylim = c(150,300),
+     lwd=2)
+lines(hw_res$prev, col = "red", lty = 2, lwd = 2)
+lines(hw_res$sup, col = "green", lty = 2, lwd = 2)
+lines(hw_res$inf, col = "green", lty = 2, lwd = 2)
+```
+
+**O erro da previsão ao final do ano de 2012, em relação ao crescimento do ano foi de `r round(sum(hw_res$dif) / (max(hw_res$real)- min(hw_res$real) ),2) ` % e `r round(sum(hw_res$dif),2)` em volume.**
+
+
+#### Conclusões
+
+  - A série de volume de vendas varejista ampliado para os anos 2003 a 2011 foi decomposta e analisada com o método Holt-Winters com sucesso;
+  
+  - Um horizonte de 12 meses, para o ano de 2012 foi calculado, com intervalo de confiança de 95%; 
+  
+  - Os valores realmente observados ficaram dentro do intervalo de confiança durante todo o horizonte de previsão;
+  
+  - A pesar da previsão calculada ter diferenças pontuais nos meses de agosto e setembro com a realidade, o resultado final foi preciso e o erro em relação ao crescimento anual do volume de vendas sumamente baixo.
+
+---
+
+NOTA: o código completo do análise e os dados encontram-se em <https://github.com/HumbertoSubiza/SER_III.git>/ST.
+
+---
+
+Referências:
+
+1- C. C. Holt (1957) Forecasting seasonals and trends by exponentially weighted moving averages, ONR Research Memorandum, Carnegie Institute of Technology 52. (reprint at http://dx.doi.org/10.1016/j.ijforecast.2003.09.015).
+
+2- P. R. Winters (1960) Forecasting sales by exponentially weighted moving averages, Management Science 6, 324–342.
+
+3- C. Chatfield (1978) The Holt-Winters Forecasting Procedure
+Journal of the Royal Statistical Society. Series C (Applied Statistics)
+Vol. 27, No. 3, pp. 264-279
+
+---
