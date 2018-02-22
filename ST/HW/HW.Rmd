@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo      = FALSE,
                       warning   = FALSE,
                       message   = FALSE,
                       fig.align = "center",
-                      fig.path  ='D:/Users/humberto.pina/Documents/R/SER_III/ST/figuras/', 
+#                      fig.path  ='D:/Users/humberto.pina/Documents/R/SER_III/ST/figuras/',                       fig.path  ='~/SER_III/ST/figuras/',
                       fig.ext   = 'png')
 ```
 
@@ -62,7 +62,9 @@ Para realizar a estimação e posterior previsão pelo método Holt-Winters no R
 # carregando arquivo de dados
 # vendas <- read.csv("D:/Users/humberto.pina/Documents/R/SER_III/ST/data/IBGE_VVCVA.csv", 
 
-vendas <- read.csv("D:/Users/humberto.pina/Documents/R/SER_III/ST/data/IBGE_VVCVA.csv", 
+#vendas <- read.csv("D:/Users/humberto.pina/Documents/R/SER_III/ST/data/IBGE_VVCVA.csv", 
+
+vendas <- read.csv("~/SER_III/ST/data/IBGE_VVCVA.csv", 
                    header=FALSE, 
                    dec=".",
                    stringsAsFactors = F)
@@ -73,7 +75,8 @@ vendas2 <- as.data.frame(t(vendas))
 st_Vendas <- ts(vendas2, 
                 start     = c(2003,1), 
                 frequency = 12)
-vol_2012 <- read.csv2("D:/Users/humberto.pina/Documents/R/SER_III/ST/data/2012.csv",
+#vol_2012 <- read.csv2("D:/Users/humberto.pina/Documents/R/SER_III/ST/data/2012.csv",
+vol_2012 <- read.csv2("~/SER_III/ST/data/2012.csv",
                  header=FALSE, 
                  stringsAsFactors = F)
 ```
@@ -126,7 +129,8 @@ plot(HW, p,
      ylab = "Volume de vendas - 2003 = 100",
      ylim = c(0,300))
 
-HW_prev <- write.csv2(p, "D:/Users/humberto.pina/Documents/R/SER_III/ST/dataHW_prev.csv")
+#HW_prev <- write.csv2(p, "D:/Users/humberto.pina/Documents/R/SER_III/ST/dataHW_prev.csv")
+HW_prev <- write.csv2(p, "~/SER_III/ST/dataHW_prev.csv")
 ```
 
 O horizonte de previsão calculado é uma matriz de três colunas contendo o valor calculado assim como os limites superior e inferior de confiança ao 95%. Incorporando os valores realmente observados em 2012, e fazendo a diferença entre real e observado temos:
@@ -175,7 +179,7 @@ lines(hw_res$inf, col = "green", lty = 2, lwd = 2)
 
 ---
 
-NOTA: o código completo do análise e os dados encontram-se em <https://github.com/HumbertoSubiza/SER_III.git>/ST.
+NOTA: o código completo do análise e os dados encontram-se em <https://github.com/HumbertoSubiza/SER_III>.
 
 ---
 
