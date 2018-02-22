@@ -11,7 +11,8 @@ knitr::opts_chunk$set(echo      = FALSE,
                       warning   = FALSE,
                       message   = FALSE,
                       fig.align = "center",
-                      fig.path  ='D:/Users/humberto.pina/Documents/R/SER_III/ST/figuras/', 
+#                      fig.path  ='D:/Users/humberto.pina/Documents/R/SER_III/ST/figuras/', 
+                      fig.path  ='C:/Users/humberto.pina/Documents/SER_III/ST/figuras/', 
                       fig.ext   = 'png')
 ```
 
@@ -31,12 +32,14 @@ A série a ser analisada contém o _volume de vendas mensal_, contabilizado entr
 
 _**colocar texto sobre rede neural e o seu uso para séries temporais**_
 
+As redes neurais estão baseadas na arquitetura de aprendizagem do ser humano e são compostas de camadas de entrada de informação, camadas ocultas de processamento e camadas de saída de resultados, semelhante aos neurônios do cérebro. 
 
-------------------------------------------------------------------------------
+O aprendizagem se dá pelos erros cometidos pelas camadas de processamento, quando comparados com o valor de saída, que é conhecido. O erro serve para redistribuir os pesos entre as camadas de processamento, e o processo se repete até o valor de saída se aproximar do valor desejado ou conhecido.
 
-O pacote R `neuralnet` implementa a metodologia mencionada anteriormente
- 
- 
+Existem diversas metodologias para a aprendizagem, em séries de comportamento regular uma das mas efetivas é a de **retropropagação**, que será usado nesse trabalho. A modificação dos pesos em cada repetição é dada através de uma taxa de aprendizado e um _momentum_. Para cada série são determinados valores ótimos para cada variável.
+
+O pacote _R_ `neuralnet` implementa a metodologia mencionada anteriormente.
+
 ```{r library}
 library (neuralnet) # ROTINAS PARA REDE NEURAL
 ```
@@ -46,7 +49,7 @@ library (neuralnet) # ROTINAS PARA REDE NEURAL
 carregando arquivo de dados
 
 ```{r load}
-vendas <- read.csv("IBGE_VVCVA_RN.csv", 
+vendas <- read.csv("C:/Users/humberto.pina/Documents/SER_III/ST/data/IBGE_VVCVA_RN.csv", 
                    header=FALSE, 
                    stringsAsFactors = F)
 
@@ -58,7 +61,6 @@ st_Vendas <- ts(vendas2,
                 start     = c(2003,1), 
                 frequency = 12)
 ```
-
 
 ---
  
@@ -98,11 +100,8 @@ plot (logst_Vendas,
 
 ```
 
-
-
 A **tendencia da série**, será retirada fazendo uma diferença entre observações
 com lag=1 e diferenças de primeira ordem.
-
 
 ```{r 03_RN_logst_diff}
 delta <- diff(logst_Vendas,lag = 1, differences = 1)
@@ -113,16 +112,13 @@ plot (delta,
      main = " Série de Vendas após retirada de tendência ")
 ```
 
-
  Na sequência vamos _normalizar a série_.
-
 
 ```{r 04_RN_norma}
 maximo <- max(delta)
 minimo <- min(delta)
 normalizado <- (delta-minimo)/(maximo-minimo)
 ```
-
 
 ---
 
@@ -131,15 +127,12 @@ normalizado <- (delta-minimo)/(maximo-minimo)
  Os lags definidos são o valor prévio (1), o segundo valor anterior (2), o quarto valor anterior (4) e o 12 valor anterior (12), caraterizando um modelo
  que leva em conta os dois meses anteriores, o valor do trimestre e do ano. O arquivo de saída vair ter 4 variáveis explicativas ($X_1 : X_4$) e 1 de resposta ($Y$), exemplo:
  
- 
 | $X_1$ | $X_2$ | $X_3$ | $X_4$ | $Y$   |
 |-------|-------|-------|-------|-------|
 | Jan04 | Dec03 | Out03 | Fev03 | Fev04 |
 | Fev04 | Jan04 | Nov03 | Mar03 | Mar04 |
 | Mar04 | Fev04 | Dec03 | Abr03 | Abr04 |
 | ...   | ...   | ...   | ...   | ...   |
-
- 
 
 ```{r 05_RN_preparacao}
 lags <- c(1, 2, 4, 12)  # INFORME OS LAGS
@@ -173,43 +166,45 @@ p       <- dim(inputs)[2] + 1 # número de variáveis no modelo
 # 
 range.data <- matrix(rep(limites, p), 2)
 }
+
 ```
 
- SELECIONA AMOSTRAS TREINO E TESTE  
+
+A rede é treinada a partir de uma seleção de amostras, chamadas de treino e teste. Para esse estudo temos um total de 107 padrões dos quais vamos selecionar 95  para o treinamento 12 de teste.
+
+
+SELECIONA AMOSTRAS TREINO E TESTE  
  
- 
+
 ```{r 06_RN_samples}
-npadroes   <- dim(data.train)[1] # calcula o número de padrões para o análise: 95
+npadroes   <- dim(data.train)[1] # calcula o número de padrões para o análise: 107
 
 noutsample <- 12 # escolhe o tamanho da previsão...12
 
-ninsample  <- npadroes-noutsample # número de padrões de treino
+ninsample  <- npadroes-noutsample # número de padrões de treino 95
 ```
 
 ---
-
- Processamento da ST com rede neural, usando o pacote neuralnet versão 1.33. O pacote treina redes neurais com `backpropagation`
 
 TREINA REDE FEEDFORWARD 
 
  Serão usadas 8 camadas escondidas, valor foi o melhor encontrado depois de testar de 3 a 10 camadas. Os padrões a serem usados são os primeiros 95 (1:ninsample) valores observados.
  
 
-
 ```{r 07_RN_model_in }
-modelo_nn <- neuralnet(formula     = Y ~ X1 + X2 + X3 + X4,
-                 data              = data.train[1: ninsample, ], 
-                 hidden            = 8,
+modelo_nn <- neuralnet(formula    = Y ~ X1 + X2 + X3 + X4,
+                 data             = data.train[1: ninsample, ], 
+                 hidden           = 8,
                  linear.output    = F)
 ```
 
+---
 
 ## Gráfico da rede neural
  
- 
 ```{r 08_RN_model_nn}
 plot(modelo_nn,
-     rep               ="best",
+     rep               = "best",
      col.hidden        = "red",
      col.entry         = "blue",
      col.entry.synapse = "blue",
@@ -283,7 +278,7 @@ MAPE_INSAMPLE = round(100*mean(abs(st_Vendas[indice[1]:indice[ninsample]] -
 ```
 
 
- Plotagem da série com indicadores de precisão
+ Plotagem da série com indicadores de precisão, MAD (média do desvio absoluto) e MAPE (percentagem do erro médio absolute)
  
  
 ```{r 11_RN_model_prec}
@@ -327,7 +322,7 @@ plot((ninsample + 1):(ninsample + noutsample),
      output[(ninsample + 1):(ninsample + noutsample)],
      xlab = "Indice do valor",
      ylab = "log(Valores)",
-     main = "log(valores observados) vs linha de previs?o",
+     main = "log(valores observados) vs linha de previsão",
      pch  = 19)
 
 lines((ninsample+1):(ninsample+noutsample),
@@ -337,12 +332,7 @@ lines((ninsample+1):(ninsample+noutsample),
 
 ```
 
-
-
  previsão do log 1 passo a frente
- 
- 
- 
 
 ```{r 13_RN_prev_plot}
 #noutsample <- 24
@@ -403,7 +393,7 @@ lines(indice[ninsample + 1]:indice[ninsample + noutsample],
       col = "red")
 
 
-# Plotar Indicadores de precis?o
+# Plotar Indicadores de precisão
 text(x_plot, y_plot, 
      paste0("MAD = ",MAD))
 text(x_plot,y_plot2, 
@@ -434,7 +424,7 @@ prev_vendas_2012 <- as.data.frame(Vendas_2012,
 names(prev_vendas_2012) <- nome_col
 
 write.csv2(prev_vendas_2012, 
-           file = "rn_previsao_vendas_2012.csv" )
+           file = "C:/Users/humberto.pina/Documents/SER_III/ST/data/rn_previsao_vendas_2012.csv")
 ```
 
 
