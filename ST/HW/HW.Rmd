@@ -130,7 +130,7 @@ plot(HW, p,
      ylim = c(0,300))
 
 #HW_prev <- write.csv2(p, "D:/Users/humberto.pina/Documents/R/SER_III/ST/dataHW_prev.csv")
-HW_prev <- write.csv2(p, "~/SER_III/ST/dataHW_prev.csv")
+HW_prev <- write.csv2(p, "C:/Users/humberto.pina/Documents/SER_III/ST/data/HW_previsao_2012.csv")
 ```
 
 O horizonte de previsão calculado é uma matriz de três colunas contendo o valor calculado assim como os limites superior e inferior de confiança ao 95%. Incorporando os valores realmente observados em 2012, e fazendo a diferença entre real e observado temos:

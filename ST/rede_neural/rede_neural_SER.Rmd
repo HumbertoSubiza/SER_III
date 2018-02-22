@@ -424,7 +424,7 @@ prev_vendas_2012 <- as.data.frame(Vendas_2012,
 names(prev_vendas_2012) <- nome_col
 
 write.csv2(prev_vendas_2012, 
-           file = "C:/Users/humberto.pina/Documents/SER_III/ST/data/rn_previsao_vendas_2012.csv")
+           file = "C:/Users/humberto.pina/Documents/SER_III/ST/data/rn_previsao_2012.csv")
 ```
 
 
