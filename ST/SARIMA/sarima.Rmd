@@ -65,10 +65,9 @@ require(urca)
 require(TSA)
 require(forecast)
 require(normtest)
-require(FinTS)
+#require(FinTS)
 require(xlsx)
 require(ggplot2)
-require(dygraphs)
 require(nortest)
 require(plotly)
 ```
@@ -84,7 +83,7 @@ Vamos conhecer primeiro o comportamento da serie.
 
 ```{r, echo=FALSE}
 # carregando arquivo de dados
-vendas <- read.csv("c:/Users/humberto.pina/Documents/SER_III/ST/data/IBGE_VVCVA.csv", 
+vendas <- read.csv("c:/Users/Walter Pina/Documents/Github/SER_III/ST/data/IBGE_VVCVA.csv", 
                    header=FALSE, 
                    dec=".",
                    stringsAsFactors = F)
@@ -118,7 +117,7 @@ No gráfico da série, nota-se variação sazonal muito semelhante até o ano de
  
  
 ```{r echo=FALSE}
-monthplot(st_Vendas)
+monthplot(st_Vendas, ylab = "Volume vendas - Base = 2003")
 ```
 
 ###Identificação
@@ -156,10 +155,8 @@ BETS.corrgram(st_Vendas,
               lag.max = 36) # 36 = 3 anos
 ```
 
-![correlograma da série](data/correlograma.png)
 
-
-Grande parte dos recursos para séries temporais foram elaborados utilizando o conceito de estacionariedade nas séries. Uma forma geral para analisar este fato é fazendo um estudo da existência de alguma raiz dos operadores de retardos dentro do círculo unitário, denominada simplesmente por raiz unitária.
+Grande parte dos recursos para séries temporais foram elaborados utilizando o conceito de estacionariedade nas séries. Uma forma geral para analisar este fato é fazendo um estudo da existência de alguma raiz dos operadores de retardos dentro do círculo unitário, denominada simplesmente por _raiz unitária_.
 
 Portanto, utilizamos testes de hipóteses que em geral, possui as seguintes hipóteses:
 
@@ -167,18 +164,22 @@ $$H_0=\text{Existe pelo menos uma raiz dentro do círculo unitário}$$
 
 $$H_1=\text{Não existem raízes dentro do círculo unitário}$$
 
-
-Apresentamos a seguir três testes de raiz unitária, cada um com suas particularidades. Em um contexto geral, o ideal é aplicar os testes em conjunto para ter a certeza da estacionariedade da série
+Testes de RU para determinação o número de diferenciações necessárias para transformar a ST em estacionária; usarei **ADF (Augmented Dickey Fuller)**.
 
 O teste de Dickey-Fuller Aumentado é conhecido na literatura como teste ADF(Augmented Dickey-Fuller) e requer o estudo sobre a seguinte regressão:
 
 
-
 $$\Delta y_t = \beta_1 + \beta_2t + \delta y_{t-1} + \sum^m_{i=1}\alpha_i \Delta y_{t-i} + \varepsilon_t$$	
 
-onde $ \beta_1 $ é o intercepto, também denominado como drift da série; $ \beta_2 $ é o coeficiente de tendência; $ \delta $ é o coeficiente de presença de raiz unitária e m é o número de defasagens tomadas na série.
+onde 
 
-Neste caso a hipótese nula é dada por  $\delta = 0 $
+  -$\beta_1$ é o intercepto, também denominado como _drift da série_; 
+  
+  -$ \beta_2 $ é o coeficiente de tendência; 
+  
+  -$ \delta $ é o coeficiente de presença de raiz unitária e _m_ é o número de defasagens tomadas na série.
+
+Neste caso a hipótese nula é dada por $\delta = 0 $
 
 Fazemos uma regressão de $ \Delta y_t $ em $ y_{t-1}, \Delta y_{t-1}, \hdots, \Delta y_{t+p-1} $ e calculamos a estatística T dada por
 
@@ -190,7 +191,6 @@ onde $ \hat{\delta} $ é um estimador para $ \delta $ e, $ se(\hat{\delta}) $ é
 
 Os valores críticos da estatística $ T $ foram tabelados por Dickey e Fuller através de simulação Monte Carlo e variam nos casos de presença somente de intercepto, presença somente de tendência e presença de ambos.
 
- Testes de RU para determinação o número de diferenciações necessárias para transformar a ST em estacionária; usarei **ADF (Augmented Dickey Fuller)**.
  
 ```{r}
 adf.drift1 <- ur.df(y          = st_Vendas, 
@@ -241,8 +241,6 @@ BETS.corrgram(diff(log (st_Vendas),
 ```
 
 
-![correlograma das primeiras diferenças](data/correlograma2.png)
-
 Para tirar a sazonalidade, vamos diferenciar a série em forma simples primeiro e depois em períodos de 12 meses. O gráfico vai mostrar o resultado.
 
 ```{r} 
@@ -255,7 +253,7 @@ diff.sazonal <- diff(diff.simples,
                      lag         =12, 
                      differences = 1)
 
-ts.plot(diff.sazonal)
+ts.plot(diff.sazonal, ylab = "Diferença sazonal")
 
 ```
 
@@ -266,7 +264,6 @@ BETS.corrgram(diff.sazonal,
               lag.max = 36)
 ```             
 
-![correlograma sem sazonalidade](data/correlograma3.png)
 
 Correlograma parcial com comprimento de 36 meses
 
@@ -276,7 +273,6 @@ BETS.corrgram(diff.sazonal,
               type    = "partial")
 ```
 
-![correlograma parcial sem sazonalidade](data/correlograma4.png)
 
  Refazendo o teste de RU depois das tranformações
  
@@ -294,6 +290,8 @@ summary(adf.drift2)
 ```
 
  Teste de RU tau2= -2.972 é inferior ao valor crítico de -2.89, com 95% de probabilidade pelo que podemos concluir que a ST é estacionária 
+ 
+ Autocorrelacao
 
 ```{r} 
 
@@ -405,9 +403,9 @@ Analise para fit.vendas2
 
 
 ```{r} 
-ArchTest(fit.vendas1$residuals,
+BETS.arch_test(fit.vendas1$residuals,
          lags = 12)
-ArchTest(fit.vendas2$residuals,
+BETS.arch_test(fit.vendas2$residuals,
          lags = 12)
 ```
 
@@ -491,8 +489,8 @@ plot(previsao)
 Finalmente vamos gravar a previsão em arquivos de formato csv e xls para distribuição dos interessados
 
 ```{r} 
-write.csv(data.frame(previsao), "data/sarima_previsao.csv")
-write.xlsx(data.frame(previsao), "data/previsao.xlsx")
+write.csv(data.frame(previsao), "C:/Users/Walter Pina/Documents/Github/SER_III/ST/data/sarima_previsao.csv")
+write.xlsx(data.frame(previsao), "C:/Users/Walter Pina/Documents/Github/SER_III/ST/data/previsao.xlsx")
 ```
 
 -------------------------------------------------------------------
