@@ -6,13 +6,23 @@ output: html_document
 ---
 
 
---------------------------------------------------------------------
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo      = FALSE,
+                      warning   = FALSE,
+                      message   = FALSE,
+                      fig.align = "center",
+                      fig.path  ="c:/Users/Walter Pina/Documents/Github/SER_III/ST/figuras/",
+                      fig.ext   = 'png')
+```
+
+
+
+---
 
 
 #Análise de serie temporal do IBGE sobre o volume de vendas do comercio varejista ampliado - VVCVA. 
 
-
---------------------------------------------------------------------
+---
 
 
 ### Sumário
@@ -35,13 +45,8 @@ output: html_document
 
 ---------------------------------------------------------
 
----------------------------------------------------------
-
 
 ##1. Introdução
-
-
-### Introdução
 
 Uma serie temporal é um conjunto de observações ordenadas no tempo e que apresentam uma dependencia serial, ou seja entre instantes de tempo, sendo a realizacao de um processo estocástico no tempo. Esse processo e dito de _ergódico_ quando uma única variável permite modelar o comportamento e fazer predições ( _horizonte de previsão_).
 
@@ -58,7 +63,7 @@ A série a ser analisada contém o _volume de vendas mensal_, contabilizado entr
 
 
 
-```{r echo=FALSE, warning=FALSE, message=FALSE}
+```{r biblio}
 # carregando bibliotecas necessárias
 require(BETS)
 require(urca)
@@ -72,16 +77,13 @@ require(nortest)
 require(plotly)
 ```
 
-##2. Análise da ST
+## 2. Análise da ST
 
-
-###Especificação
-
+### Especificação
 
 Vamos conhecer primeiro o comportamento da serie.
 
-
-```{r, echo=FALSE}
+```{r dados}
 # carregando arquivo de dados
 vendas <- read.csv("c:/Users/Walter Pina/Documents/Github/SER_III/ST/data/IBGE_VVCVA.csv", 
                    header=FALSE, 
@@ -97,7 +99,7 @@ st_Vendas <- ts(vendas2,
 ```
 
 
-```{r echo=FALSE}
+```{r sar01_st_vendas}
 lim.x <- seq(2003,2012,1)
 ts.plot(st_Vendas, 
         main= "Vendas do comércio varejista ampliado \nBase 100 = 2003",
@@ -116,7 +118,7 @@ No gráfico da série, nota-se variação sazonal muito semelhante até o ano de
  Gráfico para análise de médias e tendencia mensais. Note-se que dezembro tem a média de maior valor, fevereiro a de menor valor e o resto dos meses apresentam valores semelhantes.
  
  
-```{r echo=FALSE}
+```{r sar02_monthplot}
 monthplot(st_Vendas, ylab = "Volume vendas - Base = 2003")
 ```
 
@@ -127,7 +129,7 @@ monthplot(st_Vendas, ylab = "Volume vendas - Base = 2003")
 Vamos decompor agora a série em tres partes principais e aditivas: tendencia, componente sazonal e residuo, essa última componente deveria ser residuo branco.
 
 
-```{r echo=FALSE}
+```{r sar03_decompose}
 plot(decompose(st_Vendas))
 ```
 
@@ -150,7 +152,7 @@ em que $φ(X)$ e o operador autorregressivo (AR) de ordem _p_, $θ(X)$ e o opera
  Nóta-se que a série ainda nao é estacionaria, já que não tem decrescimento exponencial ou senoidal.
  
  
-```{r }
+```{r sar04_correlograma}
 BETS.corrgram(st_Vendas, 
               lag.max = 36) # 36 = 3 anos
 ```
@@ -192,7 +194,7 @@ onde $ \hat{\delta} $ é um estimador para $ \delta $ e, $ se(\hat{\delta}) $ é
 Os valores críticos da estatística $ T $ foram tabelados por Dickey e Fuller através de simulação Monte Carlo e variam nos casos de presença somente de intercepto, presença somente de tendência e presença de ambos.
 
  
-```{r}
+```{r adf}
 adf.drift1 <- ur.df(y          = st_Vendas, 
                    type       = c("drift"),
                    lags       = 24, 
@@ -204,7 +206,7 @@ summary(adf.drift1)
 Nota-se que as duas primeiras diferenciações tem alta significancia estatística.
 
 
- Ao analisar a estatística de teste ( ^tau^2^ = 1,367) notamos que seu valor é superior ao valor crítico associado ao nível de confiança de 95% (-2,88). 
+ Ao analisar a estatística de teste ( tau^2^ = 1,367) notamos que seu valor é superior ao valor crítico associado ao nível de confiança de 95% (-2,88). 
 Dessa forma, conclui-se que a ST não é estacionária (não rejeição da hipotese nula)                                                              
 
  Dado que a nossa ST é não estacionária, vamos tentar torná-la estacionária fazendo  uma diferenciação e vamos observar o gráfico e a FAC novamente.
@@ -213,7 +215,7 @@ Dessa forma, conclui-se que a ST não é estacionária (não rejeição da hipot
  Tornando a serie estacionaria...tirando a tendencia
  
  
-```{r, echo=FALSE}
+```{r, sar05_ts_estacionaria}
 ts.plot(diff(st_Vendas, 
              lag         = 1, 
              differences = 1))
@@ -221,7 +223,7 @@ ts.plot(diff(st_Vendas,
 
  A ST aparenta ser estacionária, a variancia tem um crescimento pequeno nos últimos anos, condicente com a teoria económica de crescimento. Vamos usar a funcao log para tirar o crescimento da variancia
  
-```{r} 
+```{r sar06_log_st} 
 ts.plot(diff(log(st_Vendas), 
              lag         = 1, 
              differences = 1))
@@ -232,7 +234,7 @@ Gráfico mostra agora a ST estacionária na média e na variancia, acorde a teor
 
 **Avaliando a estacionariedade da parte sazonal**
 
-```{r} 
+```{r sar07_correlog2} 
 BETS.corrgram(diff(log (st_Vendas),
                             lag         = 1, 
                             differences = 1), 
@@ -243,7 +245,7 @@ BETS.corrgram(diff(log (st_Vendas),
 
 Para tirar a sazonalidade, vamos diferenciar a série em forma simples primeiro e depois em períodos de 12 meses. O gráfico vai mostrar o resultado.
 
-```{r} 
+```{r sar08_dif_saz} 
 # diferença simples
 diff.simples <- diff(log(st_Vendas), 
                              lag         = 1, 
@@ -259,7 +261,7 @@ ts.plot(diff.sazonal, ylab = "Diferença sazonal")
 
 Correlograma para a série sem sazonalidade.
 
-```{r} 
+```{r correlog3} 
 BETS.corrgram(diff.sazonal, 
               lag.max = 36)
 ```             
@@ -267,7 +269,7 @@ BETS.corrgram(diff.sazonal,
 
 Correlograma parcial com comprimento de 36 meses
 
-```{r} 
+```{r sar09_correlog4} 
 BETS.corrgram(diff.sazonal, 
               lag.max = 36, 
               type    = "partial")
@@ -277,7 +279,7 @@ BETS.corrgram(diff.sazonal,
  Refazendo o teste de RU depois das tranformações
  
  
-```{r} 
+```{r adf2} 
 adf.drift2 <- ur.df(y = diff(diff(log(st_Vendas), 
                                   lag = 1), 
                             lag = 12),
@@ -293,7 +295,7 @@ summary(adf.drift2)
  
  Autocorrelacao
 
-```{r} 
+```{r sar10_acf} 
 
 acf(adf.drift2@res, 
     lag.max    = 36, 
@@ -301,14 +303,11 @@ acf(adf.drift2@res,
 ```
 
 
-###Estimação : Modelado da ST com SARIMA
-
+### Estimação : Modelado da ST com SARIMA
 
 Faremos primeiro uma estimação automática para ver a sugestão de modelo
 
-
-
-```{r} 
+```{r autoarima} 
 auto.arima(st_Vendas)
 ```
 
@@ -317,7 +316,7 @@ auto.arima(st_Vendas)
 
 Vamos fazer primeiro a sugestão do ARIMA
 
-```{r} 
+```{r arima1} 
 fit.vendas1 <- Arima(st_Vendas,
                     order    = c(0,1,1), 
                     seasonal = c(0,1,2),
@@ -329,7 +328,7 @@ summary(fit.vendas1)
 
  Teste de um outro modelo, com **sazonal = (0,1,1)**
  
-```{r} 
+```{r arima2} 
 fit.vendas2 <- Arima(st_Vendas, 
                      order    = c(0,1,1), 
                      seasonal = c(0,1,1),
@@ -341,7 +340,7 @@ summary(fit.vendas2)
 
 Todos os indicadores apresentaram uma pequena melhoria, pelo que será adotado o segundo modelo. _Nos seguintes passos usaremos os dois modelos apenas com fins comparativos._
 
-```{r} 
+```{r bets_t_test} 
 BETS.t_test(fit.vendas1) 
 BETS.t_test(fit.vendas2)
 
@@ -361,10 +360,13 @@ Precisamos verificar:
   
   3- Normalidade.
   
-```{r} 
+```{r sar11_diag1_2} 
 diag1 <- tsdiag(fit.vendas1, 
                 gof.lag = 36)
+```
 
+
+```{r sar12_diag1_2} 
 diag2 <- tsdiag(fit.vendas2, 
                 gof.lag = 36)
 ```
@@ -382,7 +384,7 @@ diag2 <- tsdiag(fit.vendas2,
 **1- Verificar a autocorrelação linear**
 
 
-```{r} 
+```{r box.test} 
 Box.test(x = fit.vendas1$residuals, 
          lag = 24,
          type = "Ljung-Box", 
@@ -402,7 +404,7 @@ Analise para fit.vendas2
 **2 - Ausência de heterocedasticidade condicional**;
 
 
-```{r} 
+```{r arch_test} 
 BETS.arch_test(fit.vendas1$residuals,
          lags = 12)
 BETS.arch_test(fit.vendas2$residuals,
@@ -416,35 +418,35 @@ Conforme mostrado pelo teste, a hipótese nula é que não há presença de efei
 
 **Teste JB**
 
-```{r} 
+```{r teste_jb} 
 jb.norm.test(fit.vendas2$residuals, 
              nrepl = 2000)
 ```
 
 
- p-value = 0.002; Como se vê o teste rejeita H0 de que a amostra provem de dist. normal
+ p-value = 0.0045; Como se vê o teste rejeita H0 de que a amostra provem de dist. normal
  Vamos verificar qual das duas condições do teste é violada:
 
   - Curtosis
  
  
-```{r} 
+```{r curtosis} 
 kurtosis.norm.test(fit.vendas2$residuals, 
                    nrepl=2000)
 ```
 
 
- p-value = 0.0015, a curtosis é rejeitada
+ p-value = 0.002, a curtosis é rejeitada
 
 
  - Simetria
  
-```{r} 
+```{r simetria} 
 skewness.norm.test(fit.vendas2$residuals, 
                    nrepl=2000)
 ```
 
- p-value = 0.6495
+ p-value = 0.642
 
  A simetria é aceita ou seja os resíduos tem simetria mas não tem a curtose de 0 (3) necessária.
 
@@ -467,7 +469,7 @@ skewness.norm.test(fit.vendas2$residuals,
  Para amostras de tamanho pequeno (e maior a 4), o pacote `nortest` tem a função lillie.test - Lilliefors (Kolmogorov-Smirnov) para normalidade.
 
 
-```{r} 
+```{r test_lillie} 
 lillie.test(fit.vendas2$residuals)
 ```
 
@@ -479,7 +481,7 @@ lillie.test(fit.vendas2$residuals)
 
  Assim sendo passamos a etapa da previsão de vendas para os próximos 12 meses, com nível de confiança de 95%
  
-```{r} 
+```{r previsao} 
 previsao <- forecast(fit.vendas2, 
                      h    =12,        # 12 meses
                      level=0.95)
@@ -488,14 +490,14 @@ plot(previsao)
 
 Finalmente vamos gravar a previsão em arquivos de formato csv e xls para distribuição dos interessados
 
-```{r} 
+```{r grava} 
 write.csv(data.frame(previsao), "C:/Users/Walter Pina/Documents/Github/SER_III/ST/data/sarima_previsao.csv")
 write.xlsx(data.frame(previsao), "C:/Users/Walter Pina/Documents/Github/SER_III/ST/data/previsao.xlsx")
 ```
 
 -------------------------------------------------------------------
 
-##3. Conclusões
+### 3. Conclusões
 
 Foi feita uma análise de uma série temporal de vendas ao varejo, coletada pelo IBGE mensalmente entre 2003 e 2011. 
 
@@ -511,9 +513,10 @@ Finalmente foi feita uma previssão a 12 meses, com 95% de confiança e os resul
 
 ----------------------------
 
-###Créditos:
+### Créditos:
 
 O presente trabalho foi realizado como parte do curso **Big Data e Data Science da FGV- Turma 2016**; na disciplina _Séries Temporais_, ministrada pelo _Prof. Pedro Costa Ferreira_ (<https://github.com/pedrocostaferreira>).
 
 --------------------------------------------------------------------
+
 ### Fim do script

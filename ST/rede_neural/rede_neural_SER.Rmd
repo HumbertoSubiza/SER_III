@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo      = FALSE,
                       message   = FALSE,
                       fig.align = "center",
 #                      fig.path  ='D:/Users/humberto.pina/Documents/R/SER_III/ST/figuras/', 
-                      fig.path  ='C:/Users/humberto.pina/Documents/SER_III/ST/figuras/', 
+                      fig.path  ='C:/Users/humberto.pina/Documents/SER_III/ST/figuras', 
                       fig.ext   = 'png')
 ```
 
@@ -46,7 +46,7 @@ library (neuralnet) # ROTINAS PARA REDE NEURAL
 
 ---
 
-carregando arquivo de dados
+Carregando arquivo de dados
 
 ```{r load}
 vendas <- read.csv("C:/Users/humberto.pina/Documents/SER_III/ST/data/IBGE_VVCVA_RN.csv", 
@@ -122,7 +122,7 @@ normalizado <- (delta-minimo)/(maximo-minimo)
 
 ---
 
- PREPARA CONJUNTO DE PADRÕES ENTRADA/SAIDA 
+### PREPARA CONJUNTO DE PADRÕES ENTRADA/SAIDA 
  
  Os lags definidos são o valor prévio (1), o segundo valor anterior (2), o quarto valor anterior (4) e o 12 valor anterior (12), caraterizando um modelo
  que leva em conta os dois meses anteriores, o valor do trimestre e do ano. O arquivo de saída vair ter 4 variáveis explicativas ($X_1 : X_4$) e 1 de resposta ($Y$), exemplo:
@@ -173,7 +173,7 @@ range.data <- matrix(rep(limites, p), 2)
 A rede é treinada a partir de uma seleção de amostras, chamadas de treino e teste. Para esse estudo temos um total de 107 padrões dos quais vamos selecionar 95  para o treinamento 12 de teste.
 
 
-SELECIONA AMOSTRAS TREINO E TESTE  
+### SELECIONA AMOSTRAS TREINO E TESTE  
  
 
 ```{r 06_RN_samples}
@@ -186,7 +186,7 @@ ninsample  <- npadroes-noutsample # número de padrões de treino 95
 
 ---
 
-TREINA REDE FEEDFORWARD 
+### TREINA REDE FEEDFORWARD 
 
  Serão usadas 8 camadas escondidas, valor foi o melhor encontrado depois de testar de 3 a 10 camadas. Os padrões a serem usados são os primeiros 95 (1:ninsample) valores observados.
  
@@ -200,7 +200,7 @@ modelo_nn <- neuralnet(formula    = Y ~ X1 + X2 + X3 + X4,
 
 ---
 
-## Gráfico da rede neural
+### Gráfico da rede neural
  
 ```{r 08_RN_model_nn}
 plot(modelo_nn,
@@ -214,9 +214,9 @@ plot(modelo_nn,
      fontsize          = 14)
 ```
 
- PREVISÃO INSAMPLE
- 
- 
+
+### PREVISÃO INSAMPLE
+
 Feito o modelo, vamos fazer uma previsão com o modelo calculado, sobre os próprios dados de treinamento (previsão insample de 95 dados).
 
 Essa previsão vai servir para testar a precisão do modelo calculado
@@ -265,7 +265,7 @@ lines(1:ninsample,
 
 
 
- Previsão de vendas do comercio varejista 1 passo a frente
+Previsão de vendas do comercio varejista 1 passo a frente
  
  
 ```{r 10_RN_mad_mape}
@@ -277,8 +277,7 @@ MAPE_INSAMPLE = round(100*mean(abs(st_Vendas[indice[1]:indice[ninsample]] -
                                      previsao_vendas_treino)/st_Vendas[indice[1]:indice[ninsample]]),2)
 ```
 
-
- Plotagem da série com indicadores de precisão, MAD (média do desvio absoluto) e MAPE (percentagem do erro médio absolute)
+Plotagem da série com indicadores de precisão, **MAD** (média do desvio absoluto) e **MAPE** (percentagem do erro médio absolute)
  
  
 ```{r 11_RN_model_prec}
@@ -307,7 +306,7 @@ text(x_plot,y_plot2, paste0("MAPE = ",MAPE_INSAMPLE," %"))
 
 ---
 
- PREVISÃO OUTSAMPLE 
+### PREVISÃO OUTSAMPLE 
  
  Vamos fazer agora a previsão sobre os valores que não foram usados para treinar o modelo, ou seja os últimos 12 valores do ano 2012 (indices 96 a 107 dos dados de data.train)
 previsão da diferença do log
@@ -332,7 +331,7 @@ lines((ninsample+1):(ninsample+noutsample),
 
 ```
 
- previsão do log 1 passo a frente
+Previsão do log 1 passo a frente
 
 ```{r 13_RN_prev_plot}
 #noutsample <- 24
@@ -359,10 +358,8 @@ lines(indice[ninsample+1]:indice[ninsample+noutsample],
 ```
 
 
- previsão de vendas 1 passo a frente
+### Previsão de vendas 1 passo a frente
  
- 
-
 ```{r 14_RN_prev_1passo}
 previsao_vendas_futuro <- exp(previsaolog)
 
@@ -427,6 +424,11 @@ write.csv2(prev_vendas_2012,
            file = "C:/Users/humberto.pina/Documents/SER_III/ST/data/rn_previsao_2012.csv")
 ```
 
+### Créditos:
+
+O presente trabalho foi realizado como parte do curso **Big Data e Data Science da FGV- Turma 2016**; na disciplina _Inteligencia Artificial - Redes Neurais Artificiais_, ministrada pelo _Prof. Jose Francisco Moreira Pessanha_ (UERJ).
+
+--------------------------------------------------------------------
 
 # Fim do análise
 
