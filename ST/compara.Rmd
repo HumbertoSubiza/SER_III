@@ -1,0 +1,45 @@
+---
+title: "Comparacao"
+author: "Walter Humberto Subiza Pina"
+date: "February 24, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+sarima <- read_csv("ST/data/sarima_previsao.csv")
+
+rn_previsao_2012 <- read_delim("ST/data/rn_previsao_2012.csv",
+";", escape_double = FALSE, trim_ws = TRUE)
+
+hw <- read_csv2("ST/data/hw_previsao_2012.csv")
+
+prev_2012 <- read_delim("ST/data/2012.csv", ";",escape_double = FALSE, col_names = FALSE,locale = locale(decimal_mark = ","),trim_ws = TRUE)
+```
+
+
+```{r}
+previsoes <- as.data.frame(cbind(prev_2012$X1, sarima$Point.Forecast, rn_previsao_2012$`Vendas Previstas`, hw$fit))
+
+names(previsoes) <- c("real", "sarima", "rn", "hw")
+
+row.names(previsoes) <- c("Jan", "Fev", "Mar", "Abr", 
+                      "Mai", "Jun", "Jul", "Ago",
+                      "Set", "Out", "Nov", "Dec")
+previsoes
+```
+
+comparacoes
+
+```{r}
+previsoes <- mutate(previsoes, dif_sar = sarima-real,
+                               dif_rn  = rn- real,
+                               dif_hw  = hw-real)
+previsoes
+```
+
+
