@@ -6,8 +6,11 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE,
+                      warning = FALSE,
+                      message = FALSE)
 ```
+
 
 ```{r}
 library(tidyverse)
@@ -18,28 +21,55 @@ rn_previsao_2012 <- read_delim("ST/data/rn_previsao_2012.csv",
 
 hw <- read_csv2("ST/data/hw_previsao_2012.csv")
 
-prev_2012 <- read_delim("ST/data/2012.csv", ";",escape_double = FALSE, col_names = FALSE,locale = locale(decimal_mark = ","),trim_ws = TRUE)
+real_2012 <- read_delim("ST/data/2012.csv", ";",escape_double = FALSE, col_names = FALSE,locale = locale(decimal_mark = ","),trim_ws = TRUE)
 ```
 
 
 ```{r}
-previsoes <- as.data.frame(cbind(prev_2012$X1, sarima$Point.Forecast, rn_previsao_2012$`Vendas Previstas`, hw$fit))
-
-names(previsoes) <- c("real", "sarima", "rn", "hw")
-
-row.names(previsoes) <- c("Jan", "Fev", "Mar", "Abr", 
+meses_n <- seq(1,12,1)
+meses <- c("Jan", "Fev", "Mar", "Abr", 
                       "Mai", "Jun", "Jul", "Ago",
                       "Set", "Out", "Nov", "Dec")
+
+previsoes <- as.data.frame(cbind(meses_n,
+                                 real_2012$X1,
+                                 round(sarima$Point.Forecast,2),
+                                 rn_previsao_2012$`Vendas Previstas`,
+                                 round(hw$fit,2)))
+
+names(previsoes) <- c("meses","real", "sarima", "rn", "hw")
+
+
 previsoes
 ```
 
 comparacoes
 
 ```{r}
-previsoes <- mutate(previsoes, dif_sar = sarima-real,
-                               dif_rn  = rn- real,
-                               dif_hw  = hw-real)
+previsoes <- mutate(previsoes, dif_sar = round(sarima-real,2),
+                               dif_rn  = round(rn- real,2),
+                               dif_hw  = round(hw-real,2))
 previsoes
 ```
 
+
+```{r message= TRUE}
+ggplot(previsoes, aes(meses,real))                       +
+         geom_line(colour = "blue", size=1.5)            +
+         geom_line(aes(meses,sarima))                    +
+         geom_line(aes(meses,rn), colour = "red")        +
+         geom_line(aes(meses, hw), color = "green")      +
+         scale_x_discrete(limits = c(1:12), labels=meses)+
+         scale_y_continuous(limits = c(150,300), name=c("Volume"))+
+  theme_classic()
+```
+
+
+
+```{r}
+previsoes <- mutate(previsoes, dif_ac_sar = cumsum(dif_sar),
+                               dif_ac_rn  = cumsum(dif_rn),
+                               dif_ac_hw  = cumsum(dif_hw))
+previsoes
+```
 
