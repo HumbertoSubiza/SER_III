@@ -7,9 +7,37 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,
-                      warning = FALSE,
-                      message = FALSE)
+                      warning   = FALSE,
+                      message   = FALSE,
+                      fig.align = "center",
+#                      fig.path  ='C:/Users/humberto.pina/Documents/SER_III/ST/figuras/',                       fig.path  ='~/SER_III/ST/figuras/',
+                      fig.ext   = 'png')
 ```
+
+
+```{r load}
+# carregando arquivo de dados
+# vendas <- read.csv("D:/Users/humberto.pina/Documents/R/SER_III/ST/data/IBGE_VVCVA.csv", 
+
+#vendas <- read.csv("D:/Users/humberto.pina/Documents/R/SER_III/ST/data/IBGE_VVCVA.csv", 
+
+vendas <- read.csv("~/SER_III/ST/data/IBGE_VVCVA.csv", 
+                   header=FALSE, 
+                   dec=".",
+                   stringsAsFactors = F)
+#transposição de linha a coluna em dataframe
+vendas2 <- as.data.frame(t(vendas))
+
+# transformação em serie temporal
+st_Vendas <- ts(vendas2, 
+                start     = c(2003,1), 
+                frequency = 12)
+#vol_2012 <- read.csv2("D:/Users/humberto.pina/Documents/R/SER_III/ST/data/2012.csv",
+vol_2012 <- read.csv2("~/SER_III/ST/data/2012.csv",
+                 header=FALSE, 
+                 stringsAsFactors = F)
+```
+
 
 
 ```{r}
@@ -76,19 +104,74 @@ previsoes
 
 ```{r}
 plot(previsoes$meses, previsoes$real,
+     xaxt = "n",
      xlab = "meses",
-     ylab = "Volume vendas previsto",
+     ylab = "Volume vendas",
      type = "o", 
      lwd  = 2,
      ylim = c(160,280))
+axis(side= 1,
+     at  = c(1:12),
+     labels = meses) 
 lines(previsoes$meses, previsoes$sarima, col = "red",       lty = 2, lwd = 2)
 lines(previsoes$meses, previsoes$rn,     col = "darkgreen", lty = 2, lwd = 2)
 lines(previsoes$meses, previsoes$hw,     col = "darkblue",  lty = 2, lwd = 2)
 legend("topleft",
+       title = "Previsão para 2012",
        lty = 1, 
        lwd = 2,
        pch = 1, 
        col = c("black", "red", "darkgreen", "darkblue"), 
        c("Dados reais", "Sarima","Rede Neural", "Holt-Winters"))
 ```
+
+
+### Conclusões
+
+  - As três metodologias conseguiram modelar o comportamento da série e fazear previsões que se mostraram satisfactorias.
+  
+  - A variação real nos meses de agosto e setembro de 2012 foi atípica já que em anos anteriores apresentou-se variaçoes em volume e tendências dispares nesse período.
+  
+  - Tanto o método Sarima como Holt-Winter, previram um valor aproximado médio para agosto-setembro, já a Rede Neural parece modelar melhor o período, mais com um mês de atrasso.
+  
+  - Em relação ao volume de vendas, o método Holt-Winters foi o mais preciso com um erro de + 1,2%, seguido da Rede Neural com + 5,4% e Sarima com -19,8%.
+  
+  
+
+```{r}
+ plot(st_Vendas[1:12,1],
+      ylim = c(90,250), type = "o",  xaxt = "n",
+     xlab = "meses",
+     ylab = "Volume vendas")
+axis (side= 1,
+     at  = c(1:12),
+     labels = meses)
+points(st_Vendas[13:24,1], col = "red", type = "o")
+points(st_Vendas[25:34,1], col = "red", type = "o")
+points(st_Vendas[37:48,1], col = "red", type = "o")
+points(st_Vendas[49:60,1], col = "red", type = "o")
+points(st_Vendas[61:72,1], col = "red", type = "o")
+points(st_Vendas[73:84,1], col = "red", type = "o", lwd = 2)
+points(st_Vendas[85:96,1], col = "red", type = "o")
+points(st_Vendas[97:108,1], col = "red", type = "o")
+```
+
+
+```{r}
+plot(previsoes$dif_ac_sar,
+     xaxt = "n",
+     type = "o", 
+     ylim = c(-35,35),
+     xlab = "meses",
+     ylab = "Volume vendas", 
+     col = "red")
+axis (side= 1,
+     at  = c(1:12),
+     labels = meses)
+points(previsoes$dif_ac_rn, type = "o")
+points(previsoes$dif_ac_hw, type = "o", col = "blue")
+abline(h=0)
+
+```
+
 
