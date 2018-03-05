@@ -2,7 +2,7 @@
 title: "Série Temporal com Holt-Winters"
 author: "Walter Humberto Subiza Pina"
 date: "20 de fevereiro de 2018"
-output: html_document
+output: word_document
 ---
 
 
@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo      = FALSE,
                       warning   = FALSE,
                       message   = FALSE,
                       fig.align = "center",
-#                      fig.path  ='D:/Users/humberto.pina/Documents/R/SER_III/ST/figuras/',                       fig.path  ='~/SER_III/ST/figuras/',
+                      fig.path  ='D:/Users/humberto.pina/Documents/R/SER_III/ST/figuras/', #                      fig.path  ='~/SER_III/ST/figuras/',
                       fig.ext   = 'png')
 ```
 
@@ -64,7 +64,7 @@ Para realizar a estimação e posterior previsão pelo método Holt-Winters no R
 
 #vendas <- read.csv("D:/Users/humberto.pina/Documents/R/SER_III/ST/data/IBGE_VVCVA.csv", 
 
-vendas <- read.csv("~/SER_III/ST/data/IBGE_VVCVA.csv", 
+vendas <- read.csv("~/R/SER_III/ST/data/IBGE_VVCVA.csv", 
                    header=FALSE, 
                    dec=".",
                    stringsAsFactors = F)
@@ -76,7 +76,7 @@ st_Vendas <- ts(vendas2,
                 start     = c(2003,1), 
                 frequency = 12)
 #vol_2012 <- read.csv2("D:/Users/humberto.pina/Documents/R/SER_III/ST/data/2012.csv",
-vol_2012 <- read.csv2("~/SER_III/ST/data/2012.csv",
+vol_2012 <- read.csv2("~/R/SER_III/ST/data/2012.csv",
                  header=FALSE, 
                  stringsAsFactors = F)
 ```
@@ -130,7 +130,7 @@ plot(HW, p,
      ylim = c(0,300))
 
 #HW_prev <- write.csv2(p, "D:/Users/humberto.pina/Documents/R/SER_III/ST/dataHW_prev.csv")
-HW_prev <- write.csv2(p, "C:/Users/humberto.pina/Documents/SER_III/ST/data/HW_previsao_2012.csv")
+HW_prev <- write.csv2(p, "D:/Users/humberto.pina/Documents/R/SER_III/ST/data/HW_previsao_2012.csv")
 ```
 
 O horizonte de previsão calculado é uma matriz de três colunas contendo o valor calculado assim como os limites superior e inferior de confiança ao 95%. Incorporando os valores realmente observados em 2012, e fazendo a diferença entre real e observado temos:
@@ -156,12 +156,12 @@ plot(hw_res$real,
      ylab = "Volume",
      xlab = "Meses",
      type = "l", 
-     col = "Blue",
+     col  = "Blue",
      ylim = c(150,300),
      lwd=2)
-lines(hw_res$prev, col = "red", lty = 2, lwd = 2)
-lines(hw_res$sup, col = "green", lty = 2, lwd = 2)
-lines(hw_res$inf, col = "green", lty = 2, lwd = 2)
+lines(hw_res$prev, col = "red",   lty = 2, lwd = 2)
+lines(hw_res$sup,  col = "green", lty = 2, lwd = 2)
+lines(hw_res$inf,  col = "green", lty = 2, lwd = 2)
 ```
 
 **O erro da previsão ao final do ano de 2012, em relação ao crescimento do ano foi de `r round(sum(hw_res$dif) / (max(hw_res$real)- min(hw_res$real) ),2) ` % e `r round(sum(hw_res$dif),2)` em volume.**
