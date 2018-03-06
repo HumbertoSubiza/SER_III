@@ -83,6 +83,8 @@ vol_2012 <- read.csv2("~/R/SER_III/ST/data/2012.csv",
 
 É importante plotar a série para verificar seu comportamento. No seguinte gráfico se apresenta a série original e a filtrada com o método Holt-Winters, parâmetros iniciais padrâo. 
 
+---
+
 ```{r 01_HW_filter}
 #Realiza o método Holt-Winters
 HW <- HoltWinters(st_Vendas)
