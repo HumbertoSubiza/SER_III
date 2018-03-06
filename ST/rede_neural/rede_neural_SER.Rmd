@@ -34,7 +34,7 @@ _**colocar texto sobre rede neural e o seu uso para séries temporais**_
 
 As redes neurais estão baseadas na arquitetura de aprendizagem do ser humano e são compostas de camadas de entrada de informação, camadas ocultas de processamento e camadas de saída de resultados, semelhante aos neurônios do cérebro. 
 
-O aprendizagem se dá pelos erros cometidos pelas camadas de processamento, quando comparados com o valor de saída, que é conhecido. O erro serve para redistribuir os pesos entre as camadas de processamento, e o processo se repete até o valor de saída se aproximar do valor desejado ou conhecido.
+A aprendizagem se dá pelos erros cometidos pelas camadas de processamento, quando comparados com o valor de saída, que é conhecido. O erro serve para redistribuir os pesos entre as camadas de processamento, e o processo se repete até o valor de saída se aproximar do valor desejado ou conhecido.
 
 Existem diversas metodologias para a aprendizagem, em séries de comportamento regular uma das mas efetivas é a de **retropropagação**, que será usado nesse trabalho. A modificação dos pesos em cada repetição é dada através de uma taxa de aprendizado e um _momentum_. Para cada série são determinados valores ótimos para cada variável.
 

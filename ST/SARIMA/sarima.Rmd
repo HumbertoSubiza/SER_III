@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo      = FALSE,
                       warning   = FALSE,
                       message   = FALSE,
                       fig.align = "center",
-                      fig.path  ="c:/Users/Walter Pina/Documents/Github/SER_III/ST/figuras/",
+                      fig.path  = "G:/Publico_IBGE_Disco_G/BKP_pessoal/Github/SER_III/ST/figuras/",
                       fig.ext   = 'png')
 ```
 
@@ -46,7 +46,7 @@ knitr::opts_chunk$set(echo      = FALSE,
 ---------------------------------------------------------
 
 
-##1. Introdução
+## 1. Introdução
 
 Uma serie temporal é um conjunto de observações ordenadas no tempo e que apresentam uma dependencia serial, ou seja entre instantes de tempo, sendo a realizacao de um processo estocástico no tempo. Esse processo e dito de _ergódico_ quando uma única variável permite modelar o comportamento e fazer predições ( _horizonte de previsão_).
 
@@ -58,6 +58,20 @@ A série temporal em estudo foi extraída em 02/02/2018 da página do IBGE e est
 A série a ser analisada contém o _volume de vendas mensal_, contabilizado entre _Janeiro de 2003 e dezembro de 2011_, usando _índice de base fixa com 2003=100_.
  
  **colocar texto sobre sarima**
+ 
+ Um dos modelos mais usados na presença de sazonalidade é o autorregressão de médias móveis ou ARIMA. Na presença de sazonalidade ele é chamado de SARIMA.
+ 
+As etapas de análise incluem a especificação, identificação, estimação, diagnóstico e finalmente a predição.
+
+Na especificação, é feita….
+
+Na identificação ….
+
+Na etapa de estimação…
+
+No diagnóstico…
+
+Finalmente na predição…
  
 ---------------------------------------------------------
 
