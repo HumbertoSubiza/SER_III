@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo      = FALSE,
                       message   = FALSE,
                       fig.align = "center",
 #                      fig.path  ='D:/Users/humberto.pina/Documents/R/SER_III/ST/figuras/', 
-                      fig.path  ='C:/Users/humberto.pina/Documents/SER_III/ST/figuras', 
+                      fig.path  ='G:/BKP_pessoal/GitHub/SER_III/ST/figuras/', 
                       fig.ext   = 'png')
 ```
 
@@ -30,15 +30,15 @@ A série temporal em estudo foi extraída em 02/02/2018 da página do IBGE e est
 
 A série a ser analisada contém o _volume de vendas mensal_, contabilizado entre _Janeiro de 2003 e dezembro de 2011_, usando _índice de base fixa com 2003=100_.
 
-_**colocar texto sobre rede neural e o seu uso para séries temporais**_
+Redes neurais estão baseadas na arquitetura de aprendizagem de organismos inteligentes, que aprendem através da experiência. A partir dos trabalhos de Santiago Ramón y Cajal sobre a estrutura microscópica do cérebro e o funcionamento dos neurônios a começos do século XX, McCulloch e Pitts fizeram o primeiro modelo computacional simulando o comportamento de um neurônio biológico.
 
-As redes neurais estão baseadas na arquitetura de aprendizagem do ser humano e são compostas de camadas de entrada de informação, camadas ocultas de processamento e camadas de saída de resultados, semelhante aos neurônios do cérebro. 
+A estrutura da rede neural em séries temporais é composta de uma camada de entrada, uma ou mais camadas ocultas e uma camada de saída. Os valores da série temporal passam por uma função de normalização na camada de entrada e é dado um peso (inicialmente aleatório), para serem enviados às camadas ocultas.
 
 A aprendizagem se dá pelos erros cometidos pelas camadas de processamento, quando comparados com o valor de saída, que é conhecido. O erro serve para redistribuir os pesos entre as camadas de processamento, e o processo se repete até o valor de saída se aproximar do valor desejado ou conhecido.
 
-Existem diversas metodologias para a aprendizagem, em séries de comportamento regular uma das mas efetivas é a de **retropropagação**, que será usado nesse trabalho. A modificação dos pesos em cada repetição é dada através de uma taxa de aprendizado e um _momentum_. Para cada série são determinados valores ótimos para cada variável.
+Existem diversas metodologias para a aprendizagem, em séries de comportamento regular uma das mas efetivas é a de retro propagação, que será usado nesse trabalho. A modificação dos pesos em cada repetição é dada através de uma taxa de aprendizado e um termo adicional de _momentum_, que introduze um efeito de inércia e ajuda a amortecer as oscilações em torno da melhor solução. 
 
-O pacote _R_ `neuralnet` implementa a metodologia mencionada anteriormente.
+O pacote  _R_ `neuralnet`  implementa a metodologia mencionada anteriormente, possibilitando o cálculo de intervalo de confiança para os pesos e gerar gráficos diversos.
 
 ```{r library}
 library (neuralnet) # ROTINAS PARA REDE NEURAL
@@ -49,7 +49,7 @@ library (neuralnet) # ROTINAS PARA REDE NEURAL
 Carregando arquivo de dados
 
 ```{r load}
-vendas <- read.csv("C:/Users/humberto.pina/Documents/SER_III/ST/data/IBGE_VVCVA_RN.csv", 
+vendas <- read.csv("G:/BKP_pessoal/GitHub/SER_III/ST/data/IBGE_VVCVA_RN.csv", 
                    header=FALSE, 
                    stringsAsFactors = F)
 
@@ -69,11 +69,11 @@ st_Vendas <- ts(vendas2,
 É importante plotar a série para verificar seu comportamento. No seguinte gráfico se apresenta a série original.
  
  
-```{r 01_RN_serie}
+```{r RN_01_serie}
 plot (st_Vendas,
      xlab = "meses",
-     ylab = "Volume de vendas",
-     main = "Vendas comercio varejista, Base 100 = 2003")
+     ylab = "Volume de vendas")
+#     main = "Vendas comercio varejista, Base 100 = 2003")
 ```
 
 
@@ -86,7 +86,7 @@ Observe que após o ano 2008, o nível apresenta um decrescimento, condicente co
 Com a finalidade de estacionar a variância vamos aplicar uma função `log` na série.
 
 
-```{r 02_RN_logst}
+```{r RN_02_logst}
 # número de observações
 n <-  length(st_Vendas)
 
@@ -95,26 +95,26 @@ logst_Vendas <-  log(st_Vendas)
 
 plot (logst_Vendas,
      xlab = "meses",
-     ylab = "log(Vendas)",
-     main = "Vendas comercio varejista, Base 100 = 2003")
+     ylab = "log(Vendas)")
+#     main = "Vendas comercio varejista, Base 100 = 2003")
 
 ```
 
 A **tendencia da série**, será retirada fazendo uma diferença entre observações
 com lag=1 e diferenças de primeira ordem.
 
-```{r 03_RN_logst_diff}
+```{r RN_03_logst_diff}
 delta <- diff(logst_Vendas,lag = 1, differences = 1)
 
 plot (delta,
      xlab = "Anos",
-     ylab = "log(Vendas)",
-     main = " Série de Vendas após retirada de tendência ")
+     ylab = "log(Vendas)")
+#     main = " Série de Vendas após retirada de tendência ")
 ```
 
  Na sequência vamos _normalizar a série_.
 
-```{r 04_RN_norma}
+```{r RN_04_norma}
 maximo <- max(delta)
 minimo <- min(delta)
 normalizado <- (delta-minimo)/(maximo-minimo)
@@ -134,7 +134,7 @@ normalizado <- (delta-minimo)/(maximo-minimo)
 | Mar04 | Fev04 | Dec03 | Abr03 | Abr04 |
 | ...   | ...   | ...   | ...   | ...   |
 
-```{r 05_RN_preparacao}
+```{r RN_05_preparacao}
 lags <- c(1, 2, 4, 12)  # INFORME OS LAGS
 inic <- max(lags) + 1  # inicar em 13
 nobs <- length(normalizado) # número de observações: 107
@@ -176,7 +176,7 @@ A rede é treinada a partir de uma seleção de amostras, chamadas de treino e t
 ### SELECIONA AMOSTRAS TREINO E TESTE  
  
 
-```{r 06_RN_samples}
+```{r RN_06_samples}
 npadroes   <- dim(data.train)[1] # calcula o número de padrões para o análise: 107
 
 noutsample <- 12 # escolhe o tamanho da previsão...12
@@ -188,10 +188,10 @@ ninsample  <- npadroes-noutsample # número de padrões de treino 95
 
 ### TREINA REDE FEEDFORWARD 
 
- Serão usadas 8 camadas escondidas, valor foi o melhor encontrado depois de testar de 3 a 10 camadas. Os padrões a serem usados são os primeiros 95 (1:ninsample) valores observados.
+ Serão usadas 8 nós ou neurônios em uma camadas oculta. Esse valor foi o melhor encontrado depois de testar de 3 a 10 nós. Os padrões a serem usados são os primeiros 95 (1:ninsample) valores observados.
  
 
-```{r 07_RN_model_in }
+```{r RN_07_model_in }
 modelo_nn <- neuralnet(formula    = Y ~ X1 + X2 + X3 + X4,
                  data             = data.train[1: ninsample, ], 
                  hidden           = 8,
@@ -202,7 +202,7 @@ modelo_nn <- neuralnet(formula    = Y ~ X1 + X2 + X3 + X4,
 
 ### Gráfico da rede neural
  
-```{r 08_RN_model_nn}
+```{r RN_08_model_nn}
 plot(modelo_nn,
      rep               = "best",
      col.hidden        = "red",
@@ -210,8 +210,8 @@ plot(modelo_nn,
      col.entry.synapse = "blue",
      col.out           = "darkgreen",
      col.out.synapse   = "darkgreen",
-     show.weights      = F,
-     fontsize          = 14)
+     show.weights      = T,
+     fontsize          = 12)
 ```
 
 
@@ -222,14 +222,14 @@ Feito o modelo, vamos fazer uma previsão com o modelo calculado, sobre os próp
 Essa previsão vai servir para testar a precisão do modelo calculado
 
 
-```{r 08_RN_prev_in}
+```{r RN_09_prev_in}
 previsao <- compute (modelo_nn, 
                  inputs[1:ninsample,])$net.result 
 
 plot (output[1:ninsample],
      xlab = "Indice do valor",
      ylab = "Valores observados",
-     main = "Previsão Insample",
+#     main = "Previsão Insample",
      pch  = 19)
 
 lines (1:ninsample, 
@@ -242,7 +242,7 @@ lines (1:ninsample,
  Vamos agora fazer a previsão da série sobre o `log` de valores reais 1 passo a frente
  
  
-```{r 09_RN_prev_log}
+```{r RN_10_prev_log}
 previsaolog <- c()
 
 for (i in 1:ninsample) {
@@ -254,7 +254,7 @@ for (i in 1:ninsample) {
 plot(logst_Vendas[indice[1]:indice[ninsample]],
      xlab = "Indice do valor",
      ylab = "log(Valores)",
-     main = "log(valores observados) vs linha de previs?o",
+#     main = "log(valores observados) vs linha de previsão",
      pch  = 19)
 
 lines(1:ninsample, 
@@ -268,7 +268,7 @@ lines(1:ninsample,
 Previsão de vendas do comercio varejista 1 passo a frente
  
  
-```{r 10_RN_mad_mape}
+```{r RN_11_mad_mape}
 previsao_vendas_treino = exp(previsaolog)
 
 MAD_INSAMPLE = round(mean(abs(st_Vendas[indice[1]:indice[ninsample]] - previsao_vendas_treino)),2)
@@ -280,7 +280,7 @@ MAPE_INSAMPLE = round(100*mean(abs(st_Vendas[indice[1]:indice[ninsample]] -
 Plotagem da série com indicadores de precisão, **MAD** (média do desvio absoluto) e **MAPE** (percentagem do erro médio absolute)
  
  
-```{r 11_RN_model_prec}
+```{r RN_12_model_prec}
 x_plot  <- mean(indice[1]:indice[ninsample])-15
 
 y_plot  <- max(st_Vendas[indice[1]:indice[ninsample]])*.95
@@ -290,7 +290,7 @@ y_plot2 <- y_plot*.95
 plot (st_Vendas[indice[1]:indice[ninsample]],
      xlab = "Indice",
      ylab = "Volume de vendas",
-     main = "Linha de previsão de vendas\nDados de Treinamento",
+#     main = "Linha de previsão de vendas\nDados de Treinamento",
      pch  = 19)
 
 lines (1:ninsample, 
@@ -311,17 +311,28 @@ text(x_plot,y_plot2, paste0("MAPE = ",MAPE_INSAMPLE," %"))
  Vamos fazer agora a previsão sobre os valores que não foram usados para treinar o modelo, ou seja os últimos 12 valores do ano 2012 (indices 96 a 107 dos dados de data.train)
 previsão da diferença do log
 
+** Revisar MAD E MAPE**
 
-```{r 12_RN_prev_out}
+```{r RN_13_prev_out}
 previsao_vendas_teste <- compute(modelo_nn,
                                  inputs[(ninsample + 1):(ninsample + noutsample),])$net.result
 
+MAD_OUTSAMPLE = round(mean(abs(st_Vendas[indice[ninsample + 1]:indice[ninsample + noutsample]] - previsao_vendas_teste)),2)
+
+MAPE_OUTSAMPLE = round(100*mean(abs(st_Vendas[indice[ninsample + 1]:indice[ninsample+ noutsample]] - 
+                                     previsao_vendas_teste)/st_Vendas[indice:ninsample + 1]:indice[ninsample + noutsample]),2)
+
+x2_plot  <- 101
+
+y2_plot  <- 0.81
+
+y2_plot2 <- y2_plot*.95
 
 plot((ninsample + 1):(ninsample + noutsample),
      output[(ninsample + 1):(ninsample + noutsample)],
      xlab = "Indice do valor",
      ylab = "log(Valores)",
-     main = "log(valores observados) vs linha de previsão",
+#     main = "log(valores observados) vs linha de previsão",
      pch  = 19)
 
 lines((ninsample+1):(ninsample+noutsample),
@@ -329,12 +340,16 @@ lines((ninsample+1):(ninsample+noutsample),
       lwd = 2,
       col = "red")
 
+text(x2_plot,y2_plot, paste0("MAD = ",MAD_INSAMPLE))
+
+text(x2_plot,y2_plot2, paste0("MAPE = ",MAPE_INSAMPLE," %"))
+
 ```
 
 Previsão do log 1 passo a frente
 
-```{r 13_RN_prev_plot}
-#noutsample <- 24
+```{r RN_14_prev_plot}
+
 previsaolog = c()
 for (i in (ninsample+1):(ninsample + noutsample)){
   x0          = logst_Vendas[indice[i] - 1]
@@ -345,10 +360,10 @@ for (i in (ninsample+1):(ninsample + noutsample)){
 plot(indice[ninsample+1]:indice[ninsample+noutsample],
      logst_Vendas[indice[ninsample+1]:indice[ninsample+noutsample]],
      ylim = c(5,5.6),
-     xlab = "Indice do valor",
+     xlab = "Meses de 2012",
      ylab = "log(Valores)",
-     main = "log(valores observados) vs linha de previsão
-     12 meses a frente",
+#     main = "log(valores observados) vs linha de previsão
+#     12 meses a frente",
      pch  = 19)
 
 lines(indice[ninsample+1]:indice[ninsample+noutsample],
@@ -360,7 +375,7 @@ lines(indice[ninsample+1]:indice[ninsample+noutsample],
 
 ### Previsão de vendas 1 passo a frente
  
-```{r 14_RN_prev_1passo}
+```{r RN_15_prev_1passo}
 previsao_vendas_futuro <- exp(previsaolog)
 
 MAD  <- round(mean(abs(st_Vendas[indice[ninsample + 1]:indice[ninsample + noutsample]] - 
@@ -375,14 +390,21 @@ y_plot <- max(st_Vendas[indice[ninsample+1]:indice[ninsample+noutsample]])*.95
 
 y_plot2 <- y_plot*.97
 
+meses <- c("Jan", "Fev", "Mar", "Abr", 
+                      "Mai", "Jun", "Jul", "Ago",
+                      "Set", "Out", "Nov", "Dec")
 
 plot (indice[ninsample+1]:indice[ninsample+noutsample],
      st_Vendas[indice[ninsample + 1]:indice[ninsample + noutsample]],
-     xlab = "Indice",
-     ylab = "Volume vendas",
-     main = "Previsão de vendas do comercio varejista
-     Ano de 2012 - Dados de Teste",
-     ylim = c(160,250))
+     xaxt = "n",
+     xlab = "Ano 2012" ,
+     ylab = "Volume vendas" ,
+     ylim = c(160,260),
+     xlim = c(109,120),
+     pch  = 19 )
+#     main = "Previsão de vendas do comercio varejista
+#     Ano de 2012 - Dados de Teste",
+axis(side= 1, at  = c(109:120),labels = meses) 
 
 lines(indice[ninsample + 1]:indice[ninsample + noutsample],
       previsao_vendas_futuro,
@@ -395,6 +417,8 @@ text(x_plot, y_plot,
      paste0("MAD = ",MAD))
 text(x_plot,y_plot2, 
      paste0("MAPE = ",MAPE," %"))
+
+
 ```
 
 
@@ -402,7 +426,7 @@ text(x_plot,y_plot2,
 Fazer uma série temporal com a previsão e exportar o arquivo
 
 
-```{r 15_RN_st_prev}
+```{r RN_16_st_prev}
 
 
 Vendas_2012 <- ts (round((previsao_vendas_futuro),2), 
@@ -421,7 +445,7 @@ prev_vendas_2012 <- as.data.frame(Vendas_2012,
 names(prev_vendas_2012) <- nome_col
 
 write.csv2(prev_vendas_2012, 
-           file = "C:/Users/humberto.pina/Documents/SER_III/ST/data/rn_previsao_2012.csv")
+           file = "G:/BKP_pessoal/GitHub/SER_III/ST/data/rn_previsao_2012.csv")
 ```
 
 ### Créditos:
@@ -432,8 +456,4 @@ O presente trabalho foi realizado como parte do curso **Big Data e Data Science 
 
 # Fim do análise
 
-```{r}
-date()
-```
-
-
+---
